@@ -27,16 +27,40 @@ const start = () => {
       name: "userChoice",
       type: "list",
       message: "What would you like to do?",
-      choices: ["View all employees", "Add an employee", "Exit"],
+      choices: [
+        "View departments",
+        "View roles",
+        "View employees",
+        "Add an employee",
+        "Add a role",
+        "Add a department",
+        "Exit",
+      ],
     })
     .then((answer) => {
       switch (answer.userChoice) {
-        case "View all employees":
+        case "View employees":
           viewEmployee();
+          break;
+
+        case "View departments":
+          viewDepartment();
+          break;
+
+        case "View roles":
+          viewRole();
           break;
 
         case "Add an employee":
           addEmployee();
+          break;
+
+        case "Add a role":
+          addRole();
+          break;
+
+        case "Add a department":
+          addDepartment();
           break;
 
         case "Exit":
@@ -50,101 +74,128 @@ const start = () => {
 
 // view all employees
 const viewEmployee = () => {
+  connection.query("SELECT * FROM employee", function (error, results, fields) {
+    if (error) throw error;
+    // console.log(results);
+    console.table(results);
+    start();
+  });
+};
 
-    connection.query("SELECT * FROM employee", function (error, results, fields) {
-        if (error) throw error;
-        console.log(results);
-        console.table(results);
-        start();
-    });
-    
+const viewRole = () => {
+  connection.query("SELECT * FROM role", function (error, results, fields) {
+    if (error) throw error;
+    // console.log(results);
+    console.table(results);
+    start();
+  });
+};
+
+const viewDepartment = () => {
+  connection.query(
+    "SELECT * FROM department",
+    function (error, results, fields) {
+      if (error) throw error;
+      // console.log(results);
+      console.table(results);
+      start();
+    }
+  );
 };
 
 // add an employee
 const addEmployee = () => {
-    inquirer.prompt([
-        {
-            name: 'firstName',
-            type: 'input',
-            message: "What is the employee's first name?"
-          },
-          {
-            name: 'lastName',
-            type: 'input',
-            message: "What is the employee's last name?",
-          },
-          {
-            name: 'role_id',
-            type: 'list',
-            message: "What is the employee's role?",
-            choices: [
-                'Customer Service',
-                'Sales',
-                'Software Engineer',
-                'Account Manager',
-                'Accountant',
-                'Lawyer',
-            ],
-          },
-          {
-            name: 'manager_id',
-            type: 'list',
-            message: "Who is the employee's manager?",
-            choices: [
-                'Nancy Jo',
-                'Winston Billy',
-                'Joe Bo',
-                'Betty Boop',
-            ],
-          },
-    
-        ])
-        .then((answer) => {
-            if(answer.role_id == "Customer Service") {
-                result = 1;
-            }
-            if(answer.role_id == "Sales") {
-                result = 2;
-            }
-            if(answer.role_id == "Software Engineer") {
-                result = 3;
-            }
-            if(answer.role_id == "Account Manager") {
-                result = 4;
-            }
-            if(answer.role_id == "Accountant") {
-                result = 5;
-            }
-            if(answer.role_id == "Lawyer") {
-                result = 6;
-            }
-            if(answer.manager_id == "Nancy Jo") {
-                result = 1;
-            }
-            if(answer.manager_id == "Winston Billy") {
-                result = 2;
-            }
-            if(answer.manager_id == "Joe Bo") {
-                result = 3;
-            }
-            if(answer.manager_id == "Betty Boop") {
-                result = 4;
-            }
-        })
-        .then((answer) => {
-            // var sql = 'INSERT INTO employee SET ?',
-            // { firstName: answer, lastName: answer, role_id: answer, manager_id: answer};
-            connection.query('INSERT INTO employee SET ?',
-            {firstName:answer.firstName, lastName: answer.lastName, role_id: answer.role_id, manager_id: answer.manager_id},
-            (error, results) => {
-                if(results) {
-                    console.log(results);
-                } else {
-                    throw error;
-                    // console.log(results);
-                    // console.table(result);
-                }
-            });
-            start();
-        })
+  inquirer
+    .prompt([
+      {
+        name: "firstname",
+        type: "input",
+        message: "What is the employee's first name?",
+      },
+      {
+        name: "lastname",
+        type: "input",
+        message: "What is the employee's last name?",
+      },
+      {
+        name: "roleid",
+        type: "input",
+        message: "What is the employee's role ID!",
+      },
+      {
+        name: "managerid",
+        type: "input",
+        message: "Enter the employee's manager's id!",
+      },
+    ])
+    .then((answer) => {
+
+      connection.query(
+        "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
+        [answer.firstname, answer.lastname, answer.roleid, answer.managerid],
+        function (err, res) {
+          if (err) throw err;
+          console.table(res);
+          start();
+        }
+      );
+    });
+};
+
+// add a role
+const addRole = () => {
+  inquirer
+    .prompt([
+      {
+        name: "title",
+        type: "input",
+        message: "What is the job title you want to add?",
+      },
+      {
+        name: "salary",
+        type: "input",
+        message: "What is the salary for this position?",
+      },
+      {
+        name: "departmentid",
+        type: "input",
+        message: "What is the department ID for this position?",
+      },
+    ])
+    .then((answer) => {
+
+      connection.query(
+        "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
+        [answer.title, answer.salary, answer.departmentid],
+        function (err, res) {
+          if (err) throw err;
+          console.table(res);
+          start();
+        }
+      );
+    });
+};
+
+// add a department
+const addDepartment = () => {
+  inquirer
+    .prompt([
+      {
+        name: "name",
+        type: "input",
+        message: "What is the department you want to add?",
+      },
+    ])
+    .then((answer) => {
+
+      connection.query(
+        "INSERT INTO department (name) VALUES (?)",
+        [answer.name],
+        function (err, res) {
+          if (err) throw err;
+          console.table(res);
+          start();
+        }
+      );
+    });
 };
