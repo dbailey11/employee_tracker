@@ -34,6 +34,9 @@ const start = () => {
         "Add a role",
         "Add a department",
         "Update employee role",
+        "Delete employee",
+        "Delete role",
+        "Delete department",
         "Exit",
       ],
     })
@@ -65,6 +68,18 @@ const start = () => {
 
         case "Update employee role":
           updateEmpRole();
+          break;
+
+        case "Delete employee":
+          deleteEmp();
+          break;
+
+        case "Delete role":
+          deleteRole();
+          break;
+
+        case "Delete department":
+          deleteDept();
           break;
 
         case "Exit":
@@ -112,6 +127,12 @@ const viewDepartment = () => {
 
 // add an employee
 const addEmployee = () => {
+  
+  const roleSql = 'SELECT role.id, role.title FROM role';
+  connection.query(roleSql, (err, data) => {
+    if (err) throw err; 
+    const roles = data.map(({ id, title }) => ({ name: title, value: id }));
+  
   inquirer
     .prompt([
       {
@@ -126,8 +147,9 @@ const addEmployee = () => {
       },
       {
         name: "roleid",
-        type: "input",
-        message: "What is the employee's role ID!",
+        type: "list",
+        message: "Enter the employee's role!",
+        choices: roles
       },
       {
         name: "managerid",
@@ -142,10 +164,12 @@ const addEmployee = () => {
         function (err, res) {
           if (err) throw err;
           console.table(res);
+          // viewEmployee();
           start();
         }
       );
     });
+  });
 };
 
 // add a role
@@ -232,7 +256,6 @@ const updateEmpRole = () => {
             type: "list",
             message: "What is the employee's new role ID?",
             choices: function () {
-              
               let roles = results.map((role) => ({
                 name: role.title,
                 value: role.id,
@@ -247,6 +270,130 @@ const updateEmpRole = () => {
           connection.query(
             "UPDATE employee SET employee.role_id = ? WHERE employee.id = ?",
             [answer.newrole, answer.name],
+            (err, results) => {
+              if (err) throw err;
+              console.log(results);
+              console.table(results);
+              start();
+            }
+          );
+        });
+    }
+  );
+};
+
+// delete employee function
+const deleteEmp = () => {
+  //query to select table to be updated
+  connection.query(
+    "SELECT id, first_name, last_name FROM employee",
+    (err, results) => {
+      console.table("Current Employees", results);
+      
+      inquirer
+        .prompt([
+          {
+            name: "name",
+            type: "list",
+            message: "Which employee do you want to remove?",
+            choices: function () {
+              //funciton to list out employees
+              let employees = results.map((employee) => ({
+                name: employee.first_name + " " + employee.last_name,
+                value: employee.id,
+              }));
+              return employees;
+            },
+          },
+        ])
+        .then((answer) => {
+
+          //delete record in table query
+          connection.query(
+            "DELETE FROM employee WHERE employee.id = ?",
+            [answer.name],
+            (err, results) => {
+              if (err) throw err;
+              console.log(results);
+              console.table(results);
+              start();
+            }
+          );
+        });
+    }
+  );
+};
+
+// delete role function
+const deleteRole = () => {
+  //query to select table to be updated
+  connection.query(
+    "SELECT id, title FROM role",
+    (err, results) => {
+      
+      inquirer
+        .prompt([
+          {
+            name: "oldrole",
+            type: "list",
+            message: "Which role do you want to remove?",
+            choices: function () {
+              //funciton to list out employees
+              let oldRole = results.map((role) => ({
+                name: role.title,
+                value: role.id,
+              }));
+              return oldRole;
+            },
+          },
+        ])
+        .then((answer) => {
+
+          //delete record in table query
+          connection.query(
+            "DELETE FROM role WHERE role.id = ?",
+            [answer.oldrole],
+            (err, results) => {
+              if (err) throw err;
+              console.log(results);
+              console.table(results);
+              start();
+            }
+          );
+        });
+    }
+  );
+};
+
+// delete department function
+const deleteDept = () => {
+  //query to select table to be updated
+  connection.query(
+    "SELECT id, name FROM department",
+    (err, results) => {
+      
+      inquirer
+        .prompt([
+          {
+            name: "olddept",
+            type: "list",
+            message: "Which department do you want to remove?",
+            choices: function () {
+              //funciton to list out employees
+              let oldDept = results.map((department) => ({
+                name: department.name,
+                value: department.id,
+              }));
+              return oldDept;
+            },
+          },
+        ])
+        .then((answer) => {
+
+          //delete record in table query
+          connection.query(
+            "DELETE FROM department WHERE department.id = ?",
+            [answer.olddept],
             (err, results) => {
               if (err) throw err;
               console.log(results);
