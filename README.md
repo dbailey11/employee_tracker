@@ -27,7 +27,7 @@ A code editing software to pull down the code and a terminal to run the applicat
 
 ## Screenshot
 
-![Image of employee tracker application](assets/screenshot.JPG)
+![Image of employee tracker application](assets/img/screenshot.JPG)
 
 ## Contributing
 
