@@ -18,9 +18,8 @@ connection.connect((err) => {
   start();
 });
 
-//--------------------------------------------------------------
+// ------ function to start main menu -----------------------------
 
-// function to start main menu
 const start = () => {
   inquirer
     .prompt({
@@ -34,6 +33,7 @@ const start = () => {
         "Add an employee",
         "Add a role",
         "Add a department",
+        "Update employee role",
         "Exit",
       ],
     })
@@ -63,6 +63,10 @@ const start = () => {
           addDepartment();
           break;
 
+        case "Update employee role":
+          updateEmpRole();
+          break;
+
         case "Exit":
           connection.end();
           break;
@@ -70,7 +74,7 @@ const start = () => {
     });
 };
 
-// Functions for choices -------------------------------------------
+// ------- Functions for choices -------------------------------------------
 
 // view all employees
 const viewEmployee = () => {
@@ -82,6 +86,7 @@ const viewEmployee = () => {
   });
 };
 
+// view all current roles
 const viewRole = () => {
   connection.query("SELECT * FROM role", function (error, results, fields) {
     if (error) throw error;
@@ -91,6 +96,7 @@ const viewRole = () => {
   });
 };
 
+// view all departments
 const viewDepartment = () => {
   connection.query(
     "SELECT * FROM department",
@@ -129,7 +135,6 @@ const addEmployee = () => {
       },
     ])
     .then((answer) => {
-
       connection.query(
         "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
         [answer.firstname, answer.lastname, answer.roleid, answer.managerid],
@@ -163,7 +168,6 @@ const addRole = () => {
       },
     ])
     .then((answer) => {
-
       connection.query(
         "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
         [answer.title, answer.salary, answer.departmentid],
@@ -187,7 +191,6 @@ const addDepartment = () => {
       },
     ])
     .then((answer) => {
-
       connection.query(
         "INSERT INTO department (name) VALUES (?)",
         [answer.name],
@@ -198,4 +201,59 @@ const addDepartment = () => {
         }
       );
     });
+};
+
+// update an employee's role
+const updateEmpRole = () => {
+  //query to select table to be updated
+  connection.query(
+    "SELECT id, first_name, last_name, role_id FROM employee",
+    (err, results) => {
+      console.table("Current Employee roles", results);
+      
+      inquirer
+        .prompt([
+          {
+            name: "name",
+            type: "list",
+            message: "Which employee do you want to update?",
+            choices: function () {
+              //funciton to list out employees
+              let employees = results.map((employee) => ({
+                name: employee.first_name + " " + employee.last_name,
+                value: employee.id,
+              }));
+              return employees;
+            },
+          },
+          {
+            name: "newrole",
+            type: "list",
+            message: "What is the employee's new role ID?",
+            choices: function () {
+              
+              let roles = results.map((role) => ({
+                name: role.title,
+                value: role.id,
+              }));
+              return roles;
+            },
+          },
+        ])
+        .then((answer) => {
+
+          //update table query
+          connection.query(
+            "UPDATE employee SET employee.role_id = ? WHERE employee.id = ?",
+            [answer.newrole, answer.name],
+            (err, results) => {
+              if (err) throw err;
+              console.log(results);
+              console.table(results);
+              start();
+            }
+          );
+        });
+    }
+  );
 };
