@@ -78,7 +78,8 @@ const start = () => {
 
 // view all employees
 const viewEmployee = () => {
-  connection.query("SELECT * FROM employee", function (error, results, fields) {
+  let sql = "SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary,department.name AS department FROM employee JOIN role ON employee.role_id = role.id JOIN department ON employee.manager_id = department.id";
+  connection.query(sql, (error, results) => {
     if (error) throw error;
     // console.log(results);
     console.table(results);
